@@ -13,116 +13,7 @@ Note: it is always true that at most one of currentCaregiver and currentPatient 
         since only one user can be logged-in at a time
 '''
 current_patient = None
-
 current_caregiver = None
-
-import re
-def check_password_strength(password):
-    """
-    Check if the password meets the strong password criteria and return specific errors.
-    """
-    errors = []
-
-    # Check if the password is at least 8 characters
-    if len(password) < 8:
-        errors.append("Password must be at least 8 characters long.")
-
-    # Check for a mixture of uppercase and lowercase letters
-    if not re.search(r'[a-z]', password):
-        errors.append("Password must contain at least one lowercase letter.")
-    if not re.search(r'[A-Z]', password):
-        errors.append("Password must contain at least one uppercase letter.")
-
-    # Check for a mixture of letters and numbers
-    if not re.search(r'[0-9]', password):
-        errors.append("Password must contain at least one number.")
-
-    # Check for at least one special character
-    if not re.search(r'[!@#?]', password):
-        errors.append("Password must contain at least one special character (!, @, #, ?).")
-
-    return errors
-
-
-def create_patient(tokens):
-    # create_patient <username> <password>
-    if len(tokens) != 3:
-        print("Create patient failed")
-        return
-
-    username = tokens[1]
-    password = tokens[2]
-
-    # Check if the password is strong
-    errors = check_password_strength(password)
-    if errors:
-        print("Password is not strong enough. Ensure it meets the following criteria:")
-        for error in errors:
-            print(f"- {error}")
-        return
-
-    if username_exists_patient(username):
-        print("Username taken, try again")
-        return
-
-    salt = Util.generate_salt()
-    hash = Util.generate_hash(password, salt)
-
-    patient = Patient(username, salt=salt, hash=hash)
-
-    try:
-        patient.save_to_db()
-    except pymssql.Error as e:
-        print("Create patient failed")
-        print("Db-Error:", e)
-        quit()
-    except Exception as e:
-        print("Create patient failed")
-        print("Error:", e)
-        return
-
-    print("Created user", username)
-
-
-def create_caregiver(tokens):
-    # create_caregiver <username> <password>
-    if len(tokens) != 3:
-        print("Failed to create user.")
-        return
-
-    username = tokens[1]
-    password = tokens[2]
-
-    # Check if the password is strong
-    errors = check_password_strength(password)
-    if errors:
-        print("Password is not strong enough. Ensure it meets the following criteria:")
-        for error in errors:
-            print(f"- {error}")
-        return
-
-    if username_exists_caregiver(username):
-        print("Username taken, try again!")
-        return
-
-    salt = Util.generate_salt()
-    hash = Util.generate_hash(password, salt)
-
-    # create the caregiver
-    caregiver = Caregiver(username, salt=salt, hash=hash)
-
-    # save to caregiver information to our database
-    try:
-        caregiver.save_to_db()
-    except pymssql.Error as e:
-        print("Failed to create user.")
-        print("Db-Error:", e)
-        quit()
-    except Exception as e:
-        print("Failed to create user.")
-        print(e)
-        return
-    print("Created user ", username)
 
 
 def create_patient(tokens):
@@ -223,6 +114,7 @@ def login_patient(tokens):
 
     #TODO: Part 1
     global current_patient
+
 
     if current_patient is not None or current_caregiver is not None:
         print("User already logged in, try again")
